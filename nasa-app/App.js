@@ -14,6 +14,8 @@ import { useState } from "react";
 import AntIcon from "@expo/vector-icons/AntDesign";
 import axios from "axios";
 import ImagemDia from "./components/ImagemDia";
+import Busca from "./components/Busca";
+import ImagemBusca from "./components/ImagemBusca"
 
 export default function App() {
   const [fotosDia, setFotosDia] = useState([]);
@@ -60,6 +62,17 @@ export default function App() {
     setFotosDia(result.data);
   }
 
+  const onBuscaRealizada = async(termo) =>{
+    const result = await axios.get("http://localhost:3000/search", {
+      params:{
+        q: termo
+      }
+    });
+
+    console.log(result.data);
+    setFotosBusca(result.data.filter((item, indice) => indice < 10));
+  }
+
   return (
     <View style={styles.container}>
       <Text style={{ textAlign: "center", marginTop: 5}}>Fotos do dia</Text>
@@ -82,15 +95,7 @@ export default function App() {
         )}
       />
 
-      {/*<TextInput
-        value={foto}
-        onChangeText={setFoto}
-        style={styles.campo}
-        placeholder="Digite o que deseja buscar (exemplos: moon, earth, etc...)"
-      />
-      <Pressable style={styles.campo} onPress={() => {}}>
-        <Text style={styles.buttonText}>Buscar</Text>
-      </Pressable>*/}
+      <Busca aoBuscar={onBuscaRealizada}/>
 
       <View style={styles.containerBotoesAnos}>
         {anos.map((ano) => (
@@ -117,7 +122,24 @@ export default function App() {
         <Text style={{ textAlign: "center" }}>{new Date().getFullYear()}</Text>
       </Pressable>
 
-      <FlatList style={styles.fotosAnos}></FlatList>
+      <FlatList
+       style={styles.fotosAnos}
+       keyExtractor={(item) => item.data[0].nsada_id}
+       data={fotosBusca}
+       renderItem={({item}) =>{
+        let primeiroLink = item.links[0]
+        let src = primeiroLink.href
+        const dados = item.data[0];
+
+        return(
+          <ImagemBusca
+            src = {src}
+            titulo = {dados.title}
+            descricao = {dados.description}
+          />
+        );
+       }}/>
+
       <View style={styles.footer}>
         <View style={styles.containerRedesSociais}>
           <View style={{ alignItems: "center" }}>
