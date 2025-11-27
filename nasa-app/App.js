@@ -12,10 +12,12 @@ import {
 
 import { useState } from "react";
 import AntIcon from "@expo/vector-icons/AntDesign";
+import axios from "axios";
+import ImagemDia from "./components/ImagemDia";
 
 export default function App() {
-  const [foto, setFoto] = useState("");
-  const [fotos, setFotos] = useState([]);
+  const [fotosDia, setFotosDia] = useState([]);
+  const [fotosBusca, setFotosBusca] = useState([]);
   const [selecionado, setSelecionado] = useState("");
 
   const anos = [
@@ -26,17 +28,61 @@ export default function App() {
     { id: "ano-1", texto: new Date().getFullYear() - 1 },
   ];
 
+  const formatarData = (data) =>{
+    const ano = data.getFullYear();
+    let mes   = data.getMonth() + 1;
+    let dia   = data.getDate();
+
+    if(mes < 10) mes = "0" + mes;
+    if(dia < 10) dia = "0" + mes;
+
+    return ano + "-" + mes + "-" + dia
+  }
+
+  const carregarFotosDia = async() =>{
+    const hoje = new Date();
+    const doisDiasAtras = new Date();
+    doisDiasAtras.setDate(hoje.getDate() - 2);
+
+    console.log("Hoje: " + hoje);
+    console.log("Dois dias atrás: " + doisDiasAtras);
+
+    const endDate = formatarData(hoje);
+    const startDate = formatarData(doisDiasAtras);
+
+    const result = await axios.get("http://localhost:3000/apod", {
+      params:{
+        start_date: startDate,
+        end_date: endDate
+      }
+    });
+
+    setFotosDia(result.data);
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={{ textAlign: "center" }}>Fotos do dia</Text>
+      <Text style={{ textAlign: "center", marginTop: 5}}>Fotos do dia</Text>
+
+      <Pressable style={styles.botaoCarregarDia} onPress={carregarFotosDia}>
+        <Text style={{textAlign: "center"}}>Carregar fotos dos últimos dias</Text>
+      </Pressable>
+
       <FlatList
         style={styles.fotosDia}
-        keyExtractor={(f) => f.id}
-        data={fotos}
-        renderItem={({ item }) => <View></View>}
+        horizontal
+        justifyContent
+        data={fotosDia}
+        keyExtractor={(foto) =>foto.date}
+        renderItem={({item}) => (
+          <ImagemDia
+            src={item.url}
+            data={item.date}
+          />
+        )}
       />
 
-      <TextInput
+      {/*<TextInput
         value={foto}
         onChangeText={setFoto}
         style={styles.campo}
@@ -44,7 +90,7 @@ export default function App() {
       />
       <Pressable style={styles.campo} onPress={() => {}}>
         <Text style={styles.buttonText}>Buscar</Text>
-      </Pressable>
+      </Pressable>*/}
 
       <View style={styles.containerBotoesAnos}>
         {anos.map((ano) => (
@@ -182,6 +228,13 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  botaoCarregarDia:{
+    width: "90%",
+    borderRadius: 4,
+    borderWidth: 2,
+    padding: 8,
+    marginBottom: 8
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",
@@ -228,11 +281,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   fotosDia: {
-    width: "90%",
     borderColor: "#000",
     borderWidth: 1,
-    borderRadius: 14,
-    padding: 20,
+    borderRadius: 14
   },
 
   fotosAnos: {
