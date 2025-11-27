@@ -63,14 +63,36 @@ export default function App() {
   }
 
   const onBuscaRealizada = async(termo) =>{
-    const result = await axios.get("http://localhost:3000/search", {
-      params:{
-        q: termo
-      }
-    });
+    let anoSelecionado;
 
-    console.log(result.data);
-    setFotosBusca(result.data.filter((item, indice) => indice < 10));
+    if(selecionado){
+      if(selecionado === "anoAtual"){
+        anoSelecionado = new Date().getFullYear();
+      }else{
+        const filtrado = anos.filter((ano) => ano.id === selecionado);
+        anoSelecionado = filtrado[0].texto;
+      }
+
+        const result = await axios.get("http://localhost:3000/search", {
+        params:{
+          q: termo,
+          year_start: anoSelecionado,
+          year_end: anoSelecionado
+        }
+      });
+
+      console.log(result.data);
+      setFotosBusca(result.data.filter((item, indice) => indice < 10));
+    }else{
+      const result = await axios.get("http://localhost:3000/search", {
+        params:{
+          q: termo
+        }
+      });
+
+      console.log(result.data);
+      setFotosBusca(result.data.filter((item, indice) => indice < 10));
+    }
   }
 
   return (
