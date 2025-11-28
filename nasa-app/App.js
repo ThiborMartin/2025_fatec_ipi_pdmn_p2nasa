@@ -36,7 +36,7 @@ export default function App() {
     let dia   = data.getDate();
 
     if(mes < 10) mes = "0" + mes;
-    if(dia < 10) dia = "0" + mes;
+    if(dia < 10) dia = "0" + dia;
 
     return ano + "-" + mes + "-" + dia
   }
@@ -146,7 +146,7 @@ export default function App() {
 
       <FlatList
        style={styles.fotosAnos}
-       keyExtractor={(item) => item.data[0].nsada_id}
+       keyExtractor={(item) => item.data[0].nasa_id}
        data={fotosBusca}
        renderItem={({item}) =>{
         let primeiroLink = item.links[0]
